@@ -1,8 +1,10 @@
 package com.jugnoo.realtime_event_service.controller;
+
+import com.jugnoo.realtime_event_service.model.OrderEvent;
+import com.jugnoo.realtime_event_service.service.RedisService;
+import com.jugnoo.realtime_event_service.service.producer.EventProducerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import com.jugnoo.realtime_event_service.service.KafkaProducerService;
-import com.jugnoo.realtime_event_service.service.RedisService;
 
 @RestController
 @RequestMapping("/api/events")
@@ -10,22 +12,26 @@ import com.jugnoo.realtime_event_service.service.RedisService;
 public class EventController {
 
     private final RedisService redisService;
-    private final KafkaProducerService kafkaProducerService;
+    private final EventProducerService EventProducerService;
 
+    // Save OrderEvent in Redis
     @PostMapping("/cache")
-    public String cacheEvent(@RequestParam String key, @RequestParam String value) {
-        redisService.save(key, value);
-        return "✅ Event cached in Redis";
+    public String cacheEvent(@RequestBody OrderEvent orderEvent) {
+        redisService.saveOrder(orderEvent);
+        return "✅ OrderEvent cached with ID: " + orderEvent.getOrderId();
     }
 
-    @GetMapping("/cache/{key}")
-    public String getCachedEvent(@PathVariable String key) {
-        return redisService.get(key);
+    // Get OrderEvent from Redis
+    @GetMapping("/cache/{orderId}")
+    public OrderEvent getCachedEvent(@PathVariable String orderId) {
+        return redisService.getOrder(orderId);
     }
 
+    // Publish message to Kafka
     @PostMapping("/publish")
-    public String publishEvent(@RequestParam String message) {
-        kafkaProducerService.sendMessage("realtime-topic", message);
+    public String publishEvent(@RequestBody OrderEvent orderEvent) {
+        EventProducerService.sendOrderEvent(orderEvent);
         return "📤 Event published to Kafka";
     }
+
 }
