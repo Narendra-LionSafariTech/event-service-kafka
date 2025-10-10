@@ -15,7 +15,7 @@ public class EventProducerService {
 
     public void sendOrderEvent(OrderEvent event) {
         kafkaTemplate.send(TOPIC, event.getOrderId(), event);
-        System.out.println("📤 Sent Order Event: " + event);
+        System.out.println("Sent Order Event: " + event);
     }
 }
 

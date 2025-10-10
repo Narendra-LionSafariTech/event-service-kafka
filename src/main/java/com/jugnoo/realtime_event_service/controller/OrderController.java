@@ -1,11 +1,15 @@
 package com.jugnoo.realtime_event_service.controller;
 
+import com.jugnoo.realtime_event_service.dto.CreateOrderRequest;
 import com.jugnoo.realtime_event_service.model.OrderEvent;
 import com.jugnoo.realtime_event_service.service.producer.EventProducerService;
 import com.jugnoo.realtime_event_service.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/orders")
@@ -19,9 +23,15 @@ public class OrderController {
      * Create a new order event -> send to Kafka
      */
     @PostMapping("/create")
-    public ResponseEntity<String> createOrder(@RequestBody OrderEvent orderEvent) {
+    public ResponseEntity<CreateOrderRequest> createOrder(@RequestBody OrderEvent orderEvent) {
         producerService.sendOrderEvent(orderEvent);
-        return ResponseEntity.ok("✅ Order event sent to Kafka: " + orderEvent.getOrderId());
+
+        CreateOrderRequest response = new CreateOrderRequest(
+                "Order event sent to Kafka",
+                orderEvent.getOrderId(),
+                "success"
+        );
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -31,7 +41,10 @@ public class OrderController {
     public ResponseEntity<?> getOrderStatus(@PathVariable String orderId) {
         OrderEvent orderEvent = redisService.getOrder(orderId);
         if (orderEvent == null) {
-            return ResponseEntity.notFound().build();
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "error");
+            response.put("message", "Order not found with ID: " + orderId);
+            return ResponseEntity.status(404).body(response);
         }
         return ResponseEntity.ok(orderEvent);
     }

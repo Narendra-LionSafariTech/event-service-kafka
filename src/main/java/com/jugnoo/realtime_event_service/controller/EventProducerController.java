@@ -15,6 +15,6 @@ public class EventProducerController {
     @PostMapping("/create")
     public String createOrder(@RequestBody OrderEvent orderEvent) {
         producerService.sendOrderEvent(orderEvent);
-        return "✅ Order event published: " + orderEvent.getOrderId();
+        return "Order event published: " + orderEvent.getOrderId();
     }
 }

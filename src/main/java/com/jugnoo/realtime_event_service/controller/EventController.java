@@ -18,7 +18,7 @@ public class EventController {
     @PostMapping("/cache")
     public String cacheEvent(@RequestBody OrderEvent orderEvent) {
         redisService.saveOrder(orderEvent);
-        return "✅ OrderEvent cached with ID: " + orderEvent.getOrderId();
+        return "OrderEvent cached with ID: " + orderEvent.getOrderId();
     }
 
     // Get OrderEvent from Redis
@@ -31,7 +31,7 @@ public class EventController {
     @PostMapping("/publish")
     public String publishEvent(@RequestBody OrderEvent orderEvent) {
         EventProducerService.sendOrderEvent(orderEvent);
-        return "📤 Event published to Kafka";
+        return "Event published to Kafka";
     }
 
 }
